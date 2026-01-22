@@ -1,12 +1,34 @@
 """
 Pytest configuration and fixtures for AudiFriends tests.
 """
+import os
 import pytest
+from pathlib import Path
+from django.conf import settings
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
+from PIL import Image
 
 from blog.models import Post
-from users.models import Profile
+
+
+@pytest.fixture(scope='session', autouse=True)
+def create_default_image():
+    """Create a default profile image for tests."""
+    media_root = Path(settings.MEDIA_ROOT)
+    media_root.mkdir(parents=True, exist_ok=True)
+
+    default_image_path = media_root / 'default.jpg'
+    if not default_image_path.exists():
+        # Create a simple 100x100 placeholder image
+        img = Image.new('RGB', (100, 100), color='gray')
+        img.save(default_image_path)
+
+    yield
+
+    # Cleanup after tests (optional)
+    # if default_image_path.exists():
+    #     default_image_path.unlink()
 
 
 @pytest.fixture

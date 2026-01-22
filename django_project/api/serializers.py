@@ -23,7 +23,9 @@ class UserSerializer(serializers.ModelSerializer):
         return None
 
     def get_posts_count(self, obj):
-        return obj.post_set.count()
+        if hasattr(obj, 'post_set'):
+            return obj.post_set.count()
+        return 0
 
 
 class UserCreateSerializer(serializers.ModelSerializer):

@@ -3,7 +3,6 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
-from rest_framework_simplejwt.views import TokenObtainPairView
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth.models import User
 from drf_spectacular.utils import extend_schema, OpenApiParameter
@@ -44,6 +43,8 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action == 'create':
             return [AllowAny()]
+        if self.action == 'me':
+            return [IsAuthenticated()]
         return [IsAuthenticatedOrReadOnly()]
 
     @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])

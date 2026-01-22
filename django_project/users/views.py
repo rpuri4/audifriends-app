@@ -71,7 +71,7 @@ def findAudioBook(request):
                     result = exact or results[0]
                 else:
                     error = 'No audiobooks found for that title.'
-            except SpotifyAuthError as e:
+            except SpotifyAuthError:
                 error = 'Spotify API not configured. Please add your credentials to .env file.'
             except Exception as e:
                 error = f'Error searching for audiobooks: {str(e)}'
