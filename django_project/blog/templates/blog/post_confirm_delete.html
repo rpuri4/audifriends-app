@@ -1,0 +1,33 @@
+{% extends "blog/base.html" %}
+{% block content %}
+<div style="max-width: 500px; margin: 2rem auto;">
+    <div class="content-section" style="border-color: var(--term-red);">
+        <div style="margin-bottom: 1.5rem;">
+            <div style="color: var(--term-dim); font-size: 0.75rem; margin-bottom: 0.5rem;">$ rm ./posts/{{ post.id }}.txt --confirm</div>
+            <h2 style="color: var(--term-red); font-size: 1.25rem; margin: 0;">Delete Post</h2>
+        </div>
+
+        <div style="background: var(--term-bg); border: 1px solid var(--term-border); padding: 1rem; margin-bottom: 1.5rem;">
+            <div style="color: var(--term-amber); font-size: 0.75rem; margin-bottom: 0.5rem;">WARNING</div>
+            <div style="color: var(--term-white);">
+                Are you sure you want to delete "<span style="color: var(--term-green);">{{ post.title }}</span>"?
+            </div>
+            <div style="color: var(--term-dim); font-size: 0.875rem; margin-top: 0.5rem;">
+                This action cannot be undone.
+            </div>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div style="display: flex; gap: 0.75rem;">
+                <button class="btn" type="submit" style="padding: 0.75rem 1.5rem; border-color: var(--term-red); color: var(--term-red);">
+                    <span style="color: var(--term-red);">$</span> confirm_delete
+                </button>
+                <a href="{% url 'post-detail' post.id %}" class="btn" style="padding: 0.75rem 1.5rem; border-color: var(--term-gray); color: var(--term-gray);">
+                    cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}

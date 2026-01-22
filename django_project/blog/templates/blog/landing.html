@@ -1,0 +1,617 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AudiFriends | Discover Audiobooks, Connect with Friends</title>
+
+    <!-- JetBrains Mono Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --term-bg: #0a0a0a;
+            --term-bg-elevated: #111111;
+            --term-border: #1a1a1a;
+            --term-green: #00ff9f;
+            --term-cyan: #00d4ff;
+            --term-amber: #ffb000;
+            --term-red: #ff4444;
+            --term-white: #e0e0e0;
+            --term-gray: #666666;
+            --term-dim: #404040;
+            --glow-green: 0 0 10px rgba(0, 255, 159, 0.3), 0 0 20px rgba(0, 255, 159, 0.1);
+        }
+
+        /* Light Theme */
+        html[data-theme="light"] {
+            --term-bg: #f8f9fa;
+            --term-bg-elevated: #ffffff;
+            --term-border: #dee2e6;
+            --term-green: #087f5b;
+            --term-cyan: #1971c2;
+            --term-amber: #e67700;
+            --term-red: #e03131;
+            --term-white: #212529;
+            --term-gray: #495057;
+            --term-dim: #adb5bd;
+            --glow-green: none;
+        }
+
+        html[data-theme="light"] body::before {
+            display: none;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            background: var(--term-bg);
+            color: var(--term-green);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Scanlines */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.1) 0px,
+                rgba(0, 0, 0, 0.1) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.3;
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 10, 10, 0.9);
+            border-bottom: 1px solid var(--term-border);
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1rem;
+            text-decoration: none;
+        }
+
+        .navbar-brand .user { color: var(--term-cyan); }
+        .navbar-brand .host { color: var(--term-green); }
+        .navbar-brand .path { color: var(--term-gray); }
+
+        .navbar-links {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .navbar-links a {
+            color: var(--term-gray);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .navbar-links a:hover {
+            color: var(--term-green);
+            border-color: var(--term-border);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--term-dim);
+            color: var(--term-dim);
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--term-cyan);
+            color: var(--term-cyan);
+        }
+
+        .btn {
+            font-family: inherit;
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--term-green);
+            background: transparent;
+            color: var(--term-green);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: var(--term-green);
+            color: var(--term-bg);
+            box-shadow: var(--glow-green);
+        }
+
+        /* Hero */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 6rem 2rem 4rem;
+        }
+
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-content {
+            max-width: 600px;
+        }
+
+        .hero-prompt {
+            color: var(--term-dim);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-title .highlight {
+            color: var(--term-cyan);
+        }
+
+        .hero-desc {
+            color: var(--term-white);
+            font-size: 1.125rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            line-height: 1.7;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-large {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+        }
+
+        .btn-secondary {
+            border-color: var(--term-gray);
+            color: var(--term-gray);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--term-white);
+            color: var(--term-white);
+            background: transparent;
+            box-shadow: none;
+        }
+
+        /* Terminal Window */
+        .terminal-window {
+            background: var(--term-bg-elevated);
+            border: 1px solid var(--term-border);
+            border-radius: 0;
+            overflow: hidden;
+        }
+
+        .terminal-header {
+            background: var(--term-border);
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .terminal-dot.red { background: var(--term-red); }
+        .terminal-dot.yellow { background: var(--term-amber); }
+        .terminal-dot.green { background: var(--term-green); }
+
+        .terminal-title {
+            margin-left: 1rem;
+            color: var(--term-gray);
+            font-size: 0.75rem;
+        }
+
+        .terminal-body {
+            padding: 1.5rem;
+            font-size: 0.875rem;
+            min-height: 300px;
+        }
+
+        .terminal-line {
+            margin-bottom: 0.5rem;
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .terminal-prompt {
+            color: var(--term-cyan);
+            margin-right: 0.5rem;
+        }
+
+        .terminal-command {
+            color: var(--term-green);
+        }
+
+        .terminal-output {
+            color: var(--term-white);
+            padding-left: 1rem;
+            margin: 0.5rem 0;
+        }
+
+        .terminal-output.success { color: var(--term-green); }
+        .terminal-output.info { color: var(--term-cyan); }
+        .terminal-output.warning { color: var(--term-amber); }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 1em;
+            background: var(--term-green);
+            animation: blink 1s infinite;
+            vertical-align: text-bottom;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Features */
+        .features {
+            padding: 6rem 2rem;
+            background: var(--term-bg-elevated);
+            border-top: 1px solid var(--term-border);
+        }
+
+        .features-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .features-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .features-header h2 {
+            color: var(--term-cyan);
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .features-header p {
+            color: var(--term-gray);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .feature-card {
+            border: 1px solid var(--term-border);
+            padding: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .feature-card:hover {
+            border-color: var(--term-green);
+        }
+
+        .feature-icon {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            filter: grayscale(100%);
+        }
+
+        .feature-card:hover .feature-icon {
+            filter: none;
+        }
+
+        .feature-title {
+            color: var(--term-cyan);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-desc {
+            color: var(--term-gray);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* CTA */
+        .cta {
+            padding: 6rem 2rem;
+            text-align: center;
+            border-top: 1px solid var(--term-border);
+        }
+
+        .cta h2 {
+            color: var(--term-green);
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .cta p {
+            color: var(--term-gray);
+            margin-bottom: 2rem;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid var(--term-border);
+            color: var(--term-dim);
+            font-size: 0.75rem;
+        }
+
+        .footer a {
+            color: var(--term-gray);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: var(--term-green);
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .hero-container {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .terminal-window {
+                max-width: 500px;
+                margin: 0 auto;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 1.75rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+            }
+
+            .navbar {
+                padding: 1rem;
+            }
+
+            .navbar-links {
+                display: none;
+            }
+
+            body::before {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">
+            <span class="user">user@</span><span class="host">audifriends</span><span class="path">:~$</span>
+        </a>
+        <div class="navbar-links">
+            <a href="#features">./features</a>
+            <a href="{% url 'blog-about' %}">./about</a>
+            <a href="{% url 'blog-home' %}">./posts</a>
+            <button class="theme-toggle" id="theme-toggle" title="Toggle Light/Dark Mode">
+                <span id="theme-icon">◐</span>
+            </button>
+            <a href="{% url 'login' %}">./login</a>
+            <a href="{% url 'register' %}" class="btn">./signup</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-prompt">$ cat welcome.txt</div>
+                <h1 class="hero-title">
+                    Discover audiobooks.<br>
+                    <span class="highlight">Connect with friends.</span>
+                </h1>
+                <p class="hero-desc">
+                    A terminal-inspired platform for audiobook lovers. Search millions of titles, build your library, and find friends who share your taste.
+                </p>
+                <div class="hero-buttons">
+                    <a href="{% url 'register' %}" class="btn btn-large">$ ./signup --free</a>
+                    <a href="#features" class="btn btn-large btn-secondary">$ man features</a>
+                </div>
+            </div>
+
+            <div class="terminal-window">
+                <div class="terminal-header">
+                    <div class="terminal-dot red"></div>
+                    <div class="terminal-dot yellow"></div>
+                    <div class="terminal-dot green"></div>
+                    <span class="terminal-title">audifriends ~ demo</span>
+                </div>
+                <div class="terminal-body">
+                    <div class="terminal-line">
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-command">audifriends search "atomic habits"</span>
+                    </div>
+                    <div class="terminal-output info">
+                        Searching Spotify audiobooks...
+                    </div>
+                    <div class="terminal-output success">
+                        Found: Atomic Habits by James Clear
+                    </div>
+                    <div class="terminal-output">
+                        Duration: 5h 35m | Rating: 4.8/5
+                    </div>
+                    <br>
+                    <div class="terminal-line">
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-command">audifriends add --library "atomic habits"</span>
+                    </div>
+                    <div class="terminal-output success">
+                        Added to your library
+                    </div>
+                    <br>
+                    <div class="terminal-line">
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-command">audifriends recommend --ai</span>
+                    </div>
+                    <div class="terminal-output info">
+                        Analyzing your library...
+                    </div>
+                    <div class="terminal-output warning">
+                        Based on your taste, try: "Deep Work" by Cal Newport
+                    </div>
+                    <br>
+                    <div class="terminal-line">
+                        <span class="terminal-prompt">$</span>
+                        <span class="cursor"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="features-container">
+            <div class="features-header">
+                <h2>$ ls ./features</h2>
+                <p>Everything you need for your audiobook journey</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3 class="feature-title">search</h3>
+                    <p class="feature-desc">Search millions of audiobooks via Spotify. Find your next listen in seconds.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📚</div>
+                    <h3 class="feature-title">library</h3>
+                    <p class="feature-desc">Build your personal audiobook collection. Track favorites and organize your reads.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👥</div>
+                    <h3 class="feature-title">friends</h3>
+                    <p class="feature-desc">Connect with people who share your taste. See what they're listening to.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💬</div>
+                    <h3 class="feature-title">posts</h3>
+                    <p class="feature-desc">Share thoughts and reviews. Engage with the audiobook community.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3 class="feature-title">ai_recommend</h3>
+                    <p class="feature-desc">Get personalized recommendations based on your library and listening history.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⌨️</div>
+                    <h3 class="feature-title">keyboard_nav</h3>
+                    <p class="feature-desc">Navigate with j/k, Ctrl+K command palette. Built for power users.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <h2>$ ready --to-start?</h2>
+        <p>Join the community of audiobook enthusiasts</p>
+        <a href="{% url 'register' %}" class="btn btn-large">$ ./create-account</a>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>
+            Built with Django + HTMX + Spotify API<br>
+            <a href="{% url 'blog-about' %}">about</a> ·
+            <a href="/api/v1/docs/">api</a> ·
+            <a href="https://github.com" target="_blank">github</a>
+        </p>
+    </footer>
+
+    <script>
+        // Theme Toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        let isDarkMode = localStorage.getItem('theme') !== 'light';
+
+        function applyTheme() {
+            if (isDarkMode) {
+                document.documentElement.removeAttribute('data-theme');
+                themeIcon.textContent = '◐';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'light');
+                themeIcon.textContent = '◑';
+            }
+        }
+        applyTheme();
+
+        themeToggle.addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+            applyTheme();
+        });
+    </script>
+</body>
+</html>

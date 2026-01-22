@@ -1,0 +1,133 @@
+{% extends "blog/base.html" %}
+{% block content %}
+
+<!-- Header -->
+<div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <div style="color: var(--term-dim); font-size: 0.75rem; margin-bottom: 0.5rem;">$ ls ~/library --count</div>
+        <h1 style="color: var(--term-cyan); font-size: 1.25rem; margin: 0;">My Library</h1>
+        <div style="color: var(--term-gray); font-size: 0.875rem; margin-top: 0.25rem;">
+            {{ favorites.paginator.count }} audiobook{{ favorites.paginator.count|pluralize }} saved
+        </div>
+    </div>
+    <a href="{% url 'FindAudioBooks' %}" class="btn">
+        <span style="color: var(--term-cyan);">$</span> add_audiobook
+    </a>
+</div>
+
+{% if favorites %}
+<!-- AI Recommendation Banner -->
+<div class="content-section" style="margin-bottom: 1.5rem; border-color: var(--term-cyan);">
+    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 200px;">
+            <div style="color: var(--term-dim); font-size: 0.75rem; margin-bottom: 0.25rem;">$ ./recommend --ai</div>
+            <div style="color: var(--term-cyan);">Get personalized recommendations</div>
+            <div style="color: var(--term-gray); font-size: 0.75rem;">Based on your library</div>
+        </div>
+        <button class="btn" id="ai-recommend-btn"
+                hx-get="{% url 'ai-recommendation' %}"
+                hx-target="#ai-result"
+                hx-swap="innerHTML"
+                hx-indicator="#ai-loading">
+            <span style="color: var(--term-cyan);">$</span> generate
+        </button>
+    </div>
+    <div id="ai-result" style="margin-top: 1rem;"></div>
+    <div id="ai-loading" class="htmx-indicator" style="color: var(--term-amber); font-size: 0.875rem; margin-top: 0.5rem;">
+        Analyzing library<span class="typing-dots"></span>
+    </div>
+</div>
+
+<!-- Audiobook Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem;">
+    {% for fav in favorites %}
+    <div class="content-section" id="favorite-{{ fav.id }}" style="padding: 0; overflow: hidden;">
+        {% if fav.image_url %}
+        <img src="{{ fav.image_url }}" alt="{{ fav.title }}" loading="lazy"
+             style="width: 100%; aspect-ratio: 1; object-fit: cover; border-bottom: 1px solid var(--term-border);">
+        {% else %}
+        <div style="width: 100%; aspect-ratio: 1; background: var(--term-bg); border-bottom: 1px solid var(--term-border); display: flex; align-items: center; justify-content: center;">
+            <span style="color: var(--term-dim); font-size: 3rem;">?</span>
+        </div>
+        {% endif %}
+        <div style="padding: 1rem;">
+            <h4 style="color: var(--term-green); font-size: 0.875rem; margin: 0 0 0.25rem 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                {{ fav.title }}
+            </h4>
+            {% if fav.authors %}
+            <p style="color: var(--term-gray); font-size: 0.75rem; margin: 0 0 0.75rem 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                {{ fav.authors|join:", " }}
+            </p>
+            {% endif %}
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="{{ fav.spotify_url }}" target="_blank" rel="noopener" class="btn" style="flex: 1; padding: 0.375rem; font-size: 0.75rem; text-align: center;">
+                    play
+                </a>
+                <button class="btn" style="padding: 0.375rem 0.5rem; font-size: 0.75rem; border-color: var(--term-red); color: var(--term-red);"
+                        hx-post="{% url 'remove-favorite' fav.id %}"
+                        hx-target="#favorite-{{ fav.id }}"
+                        hx-swap="outerHTML"
+                        hx-confirm="Remove '{{ fav.title }}' from library?">
+                    rm
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if favorites.has_other_pages %}
+<nav style="margin-top: 2rem; display: flex; justify-content: center; gap: 0.5rem;">
+    {% if favorites.has_previous %}
+    <a href="?page={{ favorites.previous_page_number }}" class="btn" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+        < prev
+    </a>
+    {% endif %}
+
+    <span style="padding: 0.5rem 1rem; color: var(--term-cyan); border: 1px solid var(--term-border); font-size: 0.875rem;">
+        {{ favorites.number }} / {{ favorites.paginator.num_pages }}
+    </span>
+
+    {% if favorites.has_next %}
+    <a href="?page={{ favorites.next_page_number }}" class="btn" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+        next >
+    </a>
+    {% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<div class="content-section" style="text-align: center; padding: 3rem 1.5rem;">
+    <div style="color: var(--term-dim); font-size: 3rem; margin-bottom: 1rem; font-family: monospace;">[ ]</div>
+    <div style="color: var(--term-gray); margin-bottom: 0.5rem;">Library is empty</div>
+    <div style="color: var(--term-dim); font-size: 0.875rem; margin-bottom: 1.5rem;">
+        <span style="color: var(--term-amber);">hint:</span> Search and save audiobooks to build your collection
+    </div>
+    <a href="{% url 'FindAudioBooks' %}" class="btn">
+        <span style="color: var(--term-cyan);">$</span> search_audiobooks
+    </a>
+</div>
+{% endif %}
+
+<style>
+.typing-dots::after {
+    content: '';
+    animation: typing 1.5s infinite;
+}
+@keyframes typing {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+}
+.htmx-indicator {
+    display: none;
+}
+.htmx-request .htmx-indicator {
+    display: block;
+}
+.htmx-request #ai-recommend-btn {
+    opacity: 0.5;
+    pointer-events: none;
+}
+</style>
+{% endblock %}

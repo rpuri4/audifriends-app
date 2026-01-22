@@ -1,0 +1,191 @@
+{% extends "blog/base.html" %}
+{% block content %}
+
+<!-- Terminal Header -->
+<div style="margin-bottom: 2rem;">
+    <div style="color: var(--term-dim); font-size: 0.75rem; margin-bottom: 0.5rem;">$ ./dashboard --user={{ user.username }}</div>
+    <h1 style="color: var(--term-cyan); font-size: 1.25rem; margin: 0;">
+        Welcome back, <span style="color: var(--term-green);">{{ user.username }}</span>
+    </h1>
+</div>
+
+<!-- Stats Row -->
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+    <div class="content-section" style="text-align: center; padding: 1.5rem;">
+        <div style="color: var(--term-dim); font-size: 0.75rem; margin-bottom: 0.5rem;">posts</div>
+        <div style="color: var(--term-green); font-size: 2rem; font-weight: 700;">{{ stats.posts_count }}</div>
+    </div>
+    <div class="content-section" style="text-align: center; padding: 1.5rem;">
+        <div style="color: var(--term-dim); font-size: 0.75rem; margin-bottom: 0.5rem;">friends</div>
+        <div style="color: var(--term-cyan); font-size: 2rem; font-weight: 700;">{{ stats.friends_count }}</div>
+    </div>
+    <div class="content-section" style="text-align: center; padding: 1.5rem;">
+        <div style="color: var(--term-dim); font-size: 0.75rem; margin-bottom: 0.5rem;">library</div>
+        <div style="color: var(--term-amber); font-size: 2rem; font-weight: 700;">{{ stats.favorites_count }}</div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+    <!-- Main Column -->
+    <div>
+        <!-- Quick Actions -->
+        <div class="content-section" style="margin-bottom: 1.5rem;">
+            <div style="color: var(--term-dim); font-size: 0.75rem; margin-bottom: 1rem;">$ ls ./commands</div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+                <a href="{% url 'FindAudioBooks' %}" class="btn">
+                    <span style="color: var(--term-cyan);">$</span> search_audiobooks
+                </a>
+                <a href="{% url 'post-create' %}" class="btn" style="border-color: var(--term-gray); color: var(--term-gray);">
+                    <span style="color: var(--term-cyan);">$</span> new_post
+                </a>
+                <a href="{% url 'discover-users' %}" class="btn" style="border-color: var(--term-gray); color: var(--term-gray);">
+                    <span style="color: var(--term-cyan);">$</span> find_friends
+                </a>
+            </div>
+        </div>
+
+        <!-- Pending Friend Requests -->
+        {% if pending_requests %}
+        <div class="content-section" style="margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div style="color: var(--term-dim); font-size: 0.75rem;">$ ls ./requests --pending</div>
+                <span style="background: var(--term-amber); color: var(--term-bg); padding: 0.125rem 0.5rem; font-size: 0.75rem;">{{ pending_requests|length }}</span>
+            </div>
+            {% for request in pending_requests %}
+            <div id="request-{{ request.id }}" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; {% if not forloop.last %}border-bottom: 1px solid var(--term-border);{% endif %}">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <img src="{{ request.from_user.profile.image.url }}" alt="{{ request.from_user.username }}"
+                         style="width: 36px; height: 36px; border-radius: 4px; border: 1px solid var(--term-border);">
+                    <div>
+                        <div style="color: var(--term-cyan);">{{ request.from_user.username }}</div>
+                        <div style="color: var(--term-dim); font-size: 0.75rem;">wants to connect</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;"
+                            hx-post="{% url 'respond-friend-request' request.id %}"
+                            hx-vals='{"action": "accept"}'
+                            hx-target="#request-{{ request.id }}"
+                            hx-swap="outerHTML">
+                        accept
+                    </button>
+                    <button class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; border-color: var(--term-gray); color: var(--term-gray);"
+                            hx-post="{% url 'respond-friend-request' request.id %}"
+                            hx-vals='{"action": "decline"}'
+                            hx-target="#request-{{ request.id }}"
+                            hx-swap="outerHTML">
+                        decline
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Activity Feed -->
+        <div class="content-section">
+            <div style="color: var(--term-dim); font-size: 0.75rem; margin-bottom: 1rem;">$ tail -f ./activity.log</div>
+            {% if activities %}
+            <div class="terminal-list">
+                {% for activity in activities %}
+                <div class="terminal-list-item" style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                    <img src="{{ activity.user.profile.image.url }}" alt="{{ activity.user.username }}"
+                         style="width: 32px; height: 32px; border-radius: 4px; border: 1px solid var(--term-border);">
+                    <div style="flex: 1;">
+                        <div>
+                            <a href="{% url 'user-profile-public' activity.user.username %}" style="color: var(--term-cyan); text-decoration: none;">{{ activity.user.username }}</a>
+                            <span style="color: var(--term-gray);">{{ activity.description }}</span>
+                        </div>
+                        <div style="color: var(--term-dim); font-size: 0.75rem;">{{ activity.created_at|timesince }} ago</div>
+                    </div>
+                    {% if activity.activity_type == 'favorite_added' and activity.metadata.audiobook_image %}
+                    <img src="{{ activity.metadata.audiobook_image }}" alt=""
+                         style="width: 40px; height: 40px; border-radius: 4px; border: 1px solid var(--term-border);">
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 2rem; color: var(--term-dim);">
+                <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">[ empty ]</div>
+                <div style="font-size: 0.875rem;">No recent activity</div>
+                <div style="font-size: 0.75rem; margin-top: 0.5rem;">
+                    <span style="color: var(--term-amber);">hint:</span> Add audiobooks to your library
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div>
+        <!-- Library Preview -->
+        <div class="content-section" style="margin-bottom: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div style="color: var(--term-dim); font-size: 0.75rem;">$ ls ~/library</div>
+                <a href="{% url 'my-library' %}" style="color: var(--term-cyan); font-size: 0.75rem; text-decoration: none;">view all</a>
+            </div>
+            {% if recent_favorites %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                {% for fav in recent_favorites %}
+                <a href="{{ fav.spotify_url }}" target="_blank" style="display: block;">
+                    {% if fav.image_url %}
+                    <img src="{{ fav.image_url }}" alt="{{ fav.title }}"
+                         style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px; border: 1px solid var(--term-border);">
+                    {% else %}
+                    <div style="width: 100%; aspect-ratio: 1; background: var(--term-bg-elevated); border: 1px solid var(--term-border); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--term-dim);">
+                        ?
+                    </div>
+                    {% endif %}
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 1.5rem; color: var(--term-dim);">
+                <div style="margin-bottom: 0.5rem;">Library empty</div>
+                <a href="{% url 'FindAudioBooks' %}" class="btn" style="font-size: 0.75rem; padding: 0.25rem 0.75rem;">
+                    search
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Suggested Friends -->
+        {% if suggested_users %}
+        <div class="content-section">
+            <div style="color: var(--term-dim); font-size: 0.75rem; margin-bottom: 0.5rem;">$ ./suggest --friends</div>
+            <div style="color: var(--term-gray); font-size: 0.75rem; margin-bottom: 1rem;">Based on shared audiobooks</div>
+            {% for suggested in suggested_users %}
+            <div id="suggested-{{ suggested.id }}" style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; {% if not forloop.last %}border-bottom: 1px solid var(--term-border);{% endif %}">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <img src="{{ suggested.profile.image.url }}" alt="{{ suggested.username }}"
+                         style="width: 28px; height: 28px; border-radius: 4px; border: 1px solid var(--term-border);">
+                    <div>
+                        <a href="{% url 'user-profile-public' suggested.username %}" style="color: var(--term-cyan); text-decoration: none; font-size: 0.875rem;">{{ suggested.username }}</a>
+                        <div style="color: var(--term-dim); font-size: 0.7rem;">{{ suggested.shared_favorites }} shared</div>
+                    </div>
+                </div>
+                <button class="btn" style="padding: 0.125rem 0.5rem; font-size: 0.7rem;"
+                        hx-post="{% url 'send-friend-request' suggested.id %}"
+                        hx-target="#suggested-{{ suggested.id }}"
+                        hx-swap="innerHTML">
+                    add
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+@media (max-width: 768px) {
+    div[style*="grid-template-columns: repeat(3"] {
+        grid-template-columns: 1fr !important;
+    }
+    div[style*="grid-template-columns: 2fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "blog/base.html" %}
+{% block content %}
+
+<!-- Header -->
+<div style="margin-bottom: 1.5rem;">
+    <div style="color: var(--term-dim); font-size: 0.75rem; margin-bottom: 0.5rem;">$ ls ~/friends</div>
+    <h1 style="color: var(--term-cyan); font-size: 1.25rem; margin: 0;">My Friends</h1>
+    <div style="color: var(--term-gray); font-size: 0.875rem; margin-top: 0.25rem;">
+        {{ friends.paginator.count }} connection{{ friends.paginator.count|pluralize }}
+    </div>
+</div>
+
+<!-- Search -->
+<div class="content-section" style="margin-bottom: 1.5rem;">
+    <form method="get" style="display: flex; gap: 0.75rem;">
+        <div style="flex: 1; position: relative;">
+            <span style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--term-dim);">$</span>
+            <input type="text" name="q" value="{{ query }}" class="form-control"
+                   placeholder="grep friend..."
+                   style="padding-left: 1.75rem;">
+        </div>
+        <button type="submit" class="btn">search</button>
+    </form>
+</div>
+
+{% if friends %}
+<div class="terminal-list">
+    {% for friend in friends %}
+    <div class="terminal-list-item" id="friend-{{ friend.id }}" style="display: flex; align-items: center; gap: 1rem;">
+        <div style="color: var(--term-dim); font-size: 0.75rem; width: 24px; text-align: right;">
+            {{ forloop.counter|stringformat:"02d" }}
+        </div>
+        <a href="{% url 'user-profile-public' friend.username %}">
+            <img src="{{ friend.profile.image.url }}" alt="{{ friend.username }}"
+                 style="width: 48px; height: 48px; border-radius: 4px; border: 1px solid var(--term-green); object-fit: cover;">
+        </a>
+        <div style="flex: 1; min-width: 0;">
+            <a href="{% url 'user-profile-public' friend.username %}" style="color: var(--term-cyan); text-decoration: none; font-size: 1rem;">
+                {{ friend.username }}
+            </a>
+            <div style="color: var(--term-dim); font-size: 0.75rem;">
+                <span style="color: var(--term-green);">+</span> connected
+            </div>
+        </div>
+        <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+            <a href="{% url 'user-profile-public' friend.username %}" class="btn" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">
+                view
+            </a>
+            <button class="btn" style="padding: 0.375rem 0.75rem; font-size: 0.75rem; border-color: var(--term-red); color: var(--term-red);"
+                    hx-post="{% url 'remove-friend' friend.id %}"
+                    hx-confirm="Remove {{ friend.username }} from friends?"
+                    hx-target="#friend-{{ friend.id }}"
+                    hx-swap="outerHTML">
+                rm
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if friends.has_other_pages %}
+<nav style="margin-top: 2rem; display: flex; justify-content: center; gap: 0.5rem;">
+    {% if friends.has_previous %}
+    <a href="?{% if query %}q={{ query }}&{% endif %}page={{ friends.previous_page_number }}" class="btn" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+        < prev
+    </a>
+    {% endif %}
+
+    <span style="padding: 0.5rem 1rem; color: var(--term-cyan); border: 1px solid var(--term-border); font-size: 0.875rem;">
+        {{ friends.number }} / {{ friends.paginator.num_pages }}
+    </span>
+
+    {% if friends.has_next %}
+    <a href="?{% if query %}q={{ query }}&{% endif %}page={{ friends.next_page_number }}" class="btn" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+        next >
+    </a>
+    {% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<div class="content-section" style="text-align: center; padding: 3rem 1.5rem;">
+    <div style="color: var(--term-dim); font-size: 3rem; margin-bottom: 1rem; font-family: monospace;">[ ]</div>
+    <div style="color: var(--term-gray); margin-bottom: 0.5rem;">
+        {% if query %}No friends matching "{{ query }}"{% else %}No friends yet{% endif %}
+    </div>
+    <div style="color: var(--term-dim); font-size: 0.875rem; margin-bottom: 1.5rem;">
+        <span style="color: var(--term-amber);">hint:</span> Discover people who share your taste
+    </div>
+    <a href="{% url 'discover-users' %}" class="btn">
+        <span style="color: var(--term-cyan);">$</span> discover_users
+    </a>
+</div>
+{% endif %}
+
+{% endblock %}

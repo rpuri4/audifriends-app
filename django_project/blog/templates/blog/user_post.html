@@ -1,0 +1,88 @@
+{% extends "blog/base.html" %}
+{% block content %}
+
+<!-- Header -->
+<div style="margin-bottom: 1.5rem;">
+    <div style="color: var(--term-dim); font-size: 0.75rem; margin-bottom: 0.5rem;">$ ls ./posts --author={{ view.kwargs.username }}</div>
+    <h1 style="color: var(--term-cyan); font-size: 1.25rem; margin: 0;">
+        Posts by <span style="color: var(--term-green);">{{ view.kwargs.username }}</span>
+    </h1>
+    <div style="color: var(--term-gray); font-size: 0.875rem; margin-top: 0.25rem;">
+        {{ page_obj.paginator.count }} post{{ page_obj.paginator.count|pluralize }}
+    </div>
+</div>
+
+{% if posts %}
+<div class="terminal-list">
+    {% for post in posts %}
+    <article class="terminal-list-item"
+             hx-get="{% url 'post-detail' post.id %}"
+             hx-target="#detail-panel .panel-content"
+             hx-swap="innerHTML"
+             onclick="openDetailPanel()"
+             style="cursor: pointer;">
+        <div style="display: flex; gap: 1rem;">
+            <div style="color: var(--term-dim); font-size: 0.75rem; width: 24px; text-align: right; flex-shrink: 0; padding-top: 2px;">
+                {{ forloop.counter|stringformat:"02d" }}
+            </div>
+            <img src="{{ post.author.profile.image.url }}" alt="{{ post.author.username }}"
+                 style="width: 40px; height: 40px; border-radius: 4px; border: 1px solid var(--term-border); object-fit: cover;">
+            <div style="flex: 1; min-width: 0;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                    <span style="color: var(--term-cyan); font-size: 0.875rem;">{{ post.author }}</span>
+                    <span style="color: var(--term-dim);">·</span>
+                    <span style="color: var(--term-dim); font-size: 0.75rem;">{{ post.date_posted|date:"M d" }}</span>
+                </div>
+                <h2 style="color: var(--term-green); font-size: 1rem; margin: 0 0 0.5rem 0; font-weight: 500;">
+                    {{ post.title }}
+                </h2>
+                <p style="color: var(--term-gray); font-size: 0.875rem; margin: 0; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">
+                    {{ post.content|truncatewords:30 }}
+                </p>
+            </div>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+
+{% if is_paginated %}
+<nav style="margin-top: 2rem; display: flex; justify-content: center; gap: 0.5rem;">
+    {% if page_obj.has_previous %}
+    <a href="?page=1" class="btn" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+        << first
+    </a>
+    <a href="?page={{ page_obj.previous_page_number }}" class="btn" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+        < prev
+    </a>
+    {% endif %}
+
+    <span style="padding: 0.5rem 1rem; color: var(--term-cyan); border: 1px solid var(--term-border); font-size: 0.875rem;">
+        {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+    </span>
+
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}" class="btn" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+        next >
+    </a>
+    <a href="?page={{ page_obj.paginator.num_pages }}" class="btn" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+        last >>
+    </a>
+    {% endif %}
+</nav>
+{% endif %}
+
+{% else %}
+<div class="content-section" style="text-align: center; padding: 3rem 1.5rem;">
+    <div style="color: var(--term-dim); font-size: 3rem; margin-bottom: 1rem; font-family: monospace;">[ ]</div>
+    <div style="color: var(--term-gray);">No posts by this user yet</div>
+</div>
+{% endif %}
+
+<!-- Back link -->
+<div style="margin-top: 1.5rem;">
+    <a href="{% url 'blog-home' %}" style="color: var(--term-cyan); text-decoration: none; font-size: 0.875rem;">
+        <span style="color: var(--term-dim);">&lt;</span> back to feed
+    </a>
+</div>
+
+{% endblock content %}

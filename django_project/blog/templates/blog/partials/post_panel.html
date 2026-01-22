@@ -1,0 +1,45 @@
+<!-- Post Panel Content (loaded via HTMX) -->
+<div style="padding: 1.5rem;">
+    <!-- Header -->
+    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+        <a href="{% url 'user-posts' post.author.username %}">
+            <img src="{{ post.author.profile.image.url }}" alt="{{ post.author.username }}"
+                 style="width: 48px; height: 48px; border-radius: 4px; border: 1px solid var(--term-border); object-fit: cover;">
+        </a>
+        <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <a href="{% url 'user-posts' post.author.username %}" style="color: var(--term-cyan); text-decoration: none;">
+                    {{ post.author }}
+                </a>
+                <span style="color: var(--term-dim);">·</span>
+                <span style="color: var(--term-dim); font-size: 0.875rem;">{{ post.date_posted|date:"F d, Y" }}</span>
+            </div>
+            <div style="color: var(--term-dim); font-size: 0.75rem;">
+                $ cat ./posts/{{ post.id }}.txt
+            </div>
+        </div>
+    </div>
+
+    <!-- Title -->
+    <h1 style="color: var(--term-green); font-size: 1.25rem; margin: 0 0 1.5rem 0; font-weight: 600;">
+        {{ post.title }}
+    </h1>
+
+    <!-- Content -->
+    <div style="color: var(--term-white); line-height: 1.8; white-space: pre-wrap; font-size: 0.9rem;">{{ post.content }}</div>
+
+    <!-- Actions -->
+    <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--term-border); display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <a href="{% url 'post-detail' post.pk %}" class="btn" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+            <span style="color: var(--term-cyan);">$</span> open_full
+        </a>
+        {% if post.author == user %}
+        <a href="{% url 'post-update' post.pk %}" class="btn" style="padding: 0.5rem 1rem; font-size: 0.875rem; border-color: var(--term-amber); color: var(--term-amber);">
+            <span style="color: var(--term-amber);">$</span> edit
+        </a>
+        <a href="{% url 'post-delete' post.pk %}" class="btn" style="padding: 0.5rem 1rem; font-size: 0.875rem; border-color: var(--term-red); color: var(--term-red);">
+            <span style="color: var(--term-red);">$</span> rm
+        </a>
+        {% endif %}
+    </div>
+</div>

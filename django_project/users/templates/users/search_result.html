@@ -1,0 +1,8 @@
+{% extends "blog/base.html" %}
+<!-- notice that we can refer to the blog template despite in different dir -->
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="content-section">
+    {{ information }}
+</div>
+{% endblock content %}

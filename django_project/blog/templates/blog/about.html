@@ -1,0 +1,82 @@
+{% extends "blog/base.html" %}
+{% block content %}
+
+<div style="max-width: 700px; margin: 0 auto;">
+    <!-- Header -->
+    <div style="margin-bottom: 2rem;">
+        <div style="color: var(--term-dim); font-size: 0.75rem; margin-bottom: 0.5rem;">$ cat ./about.md</div>
+        <h1 style="color: var(--term-cyan); font-size: 1.5rem; margin: 0;">About AudiFriends</h1>
+    </div>
+
+    <!-- Content -->
+    <div class="content-section" style="line-height: 1.8;">
+        <div style="color: var(--term-green); margin-bottom: 1.5rem;">
+            <span style="color: var(--term-dim);">##</span> Overview
+        </div>
+        <p style="color: var(--term-white); margin-bottom: 1.5rem;">
+            <strong style="color: var(--term-cyan);">AudiFriends</strong> is a social platform for audiobook enthusiasts. We connect people through their shared love of audiobooks, using the Spotify API to power our audiobook discovery features.
+        </p>
+
+        <div style="color: var(--term-green); margin-bottom: 1rem; margin-top: 2rem;">
+            <span style="color: var(--term-dim);">##</span> Features
+        </div>
+
+        <div style="margin-bottom: 1.5rem; padding-left: 1rem; border-left: 2px solid var(--term-border);">
+            <div style="color: var(--term-cyan); margin-bottom: 0.5rem;">search</div>
+            <p style="color: var(--term-gray); margin: 0; font-size: 0.875rem;">
+                Search millions of audiobooks via Spotify integration. Find your next listen in seconds.
+            </p>
+        </div>
+
+        <div style="margin-bottom: 1.5rem; padding-left: 1rem; border-left: 2px solid var(--term-border);">
+            <div style="color: var(--term-cyan); margin-bottom: 0.5rem;">library</div>
+            <p style="color: var(--term-gray); margin: 0; font-size: 0.875rem;">
+                Build your personal audiobook collection. Save favorites and track what you've listened to.
+            </p>
+        </div>
+
+        <div style="margin-bottom: 1.5rem; padding-left: 1rem; border-left: 2px solid var(--term-border);">
+            <div style="color: var(--term-cyan); margin-bottom: 0.5rem;">friends</div>
+            <p style="color: var(--term-gray); margin: 0; font-size: 0.875rem;">
+                Connect with people who share your taste. See what friends are listening to and discover through them.
+            </p>
+        </div>
+
+        <div style="margin-bottom: 1.5rem; padding-left: 1rem; border-left: 2px solid var(--term-border);">
+            <div style="color: var(--term-cyan); margin-bottom: 0.5rem;">ai_recommend</div>
+            <p style="color: var(--term-gray); margin: 0; font-size: 0.875rem;">
+                Get personalized recommendations based on your library and listening preferences.
+            </p>
+        </div>
+
+        <div style="color: var(--term-green); margin-bottom: 1rem; margin-top: 2rem;">
+            <span style="color: var(--term-dim);">##</span> Tech Stack
+        </div>
+
+        <div style="background: var(--term-bg); border: 1px solid var(--term-border); padding: 1rem; font-size: 0.875rem;">
+            <div style="color: var(--term-dim); margin-bottom: 0.5rem;">$ cat requirements.txt</div>
+            <div style="color: var(--term-white);">
+                <span style="color: var(--term-cyan);">Django</span> - Backend framework<br>
+                <span style="color: var(--term-cyan);">HTMX</span> - Dynamic interactions<br>
+                <span style="color: var(--term-cyan);">Spotify API</span> - Audiobook data<br>
+                <span style="color: var(--term-cyan);">PostgreSQL</span> - Database<br>
+            </div>
+        </div>
+
+        <div style="color: var(--term-green); margin-bottom: 1rem; margin-top: 2rem;">
+            <span style="color: var(--term-dim);">##</span> Privacy
+        </div>
+        <p style="color: var(--term-gray); margin-bottom: 0; font-size: 0.875rem;">
+            Your data is stored securely. You control what you share and who can see your library. We never sell your information.
+        </p>
+    </div>
+
+    <!-- CTA -->
+    <div style="text-align: center; margin-top: 2rem;">
+        <a href="{% url 'register' %}" class="btn" style="padding: 0.75rem 1.5rem;">
+            <span style="color: var(--term-cyan);">$</span> ./register
+        </a>
+    </div>
+</div>
+
+{% endblock content %}

@@ -1,0 +1,128 @@
+{% extends "blog/base.html" %}
+{% block content %}
+
+<div style="max-width: 700px; margin: 0 auto;">
+    <!-- Header -->
+    <div class="content-section" style="margin-bottom: 1.5rem;">
+        <div style="color: var(--term-dim); font-size: 0.75rem; margin-bottom: 1rem;">$ cat ./users/{{ profile_user.username }}.json</div>
+
+        <div style="display: flex; gap: 1.5rem; align-items: flex-start;">
+            <img src="{{ profile_user.profile.image.url }}" alt="{{ profile_user.username }}"
+                 style="width: 80px; height: 80px; border-radius: 4px; border: 2px solid var(--term-cyan); object-fit: cover;">
+            <div style="flex: 1;">
+                <div style="color: var(--term-cyan); font-size: 1.5rem; font-weight: 600; margin-bottom: 0.25rem;">
+                    {{ profile_user.username }}
+                </div>
+                <div style="color: var(--term-gray); font-size: 0.875rem; margin-bottom: 1rem;">
+                    {{ friends_count }} friend{{ friends_count|pluralize }} · {{ profile_user.audiobook_favorites.count }} audiobook{{ profile_user.audiobook_favorites.count|pluralize }}
+                </div>
+
+                <!-- Connection Status -->
+                {% if is_friend %}
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <span style="color: var(--term-green); font-size: 0.875rem;">
+                        <span style="color: var(--term-green);">+</span> Friends
+                    </span>
+                    <button class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; border-color: var(--term-red); color: var(--term-red);"
+                            hx-post="{% url 'remove-friend' profile_user.id %}"
+                            hx-confirm="Remove {{ profile_user.username }} from friends?"
+                            hx-swap="outerHTML">
+                        unfriend
+                    </button>
+                </div>
+                {% elif request_sent %}
+                <span style="color: var(--term-amber); font-size: 0.875rem;">
+                    <span style="color: var(--term-amber);">~</span> Request pending
+                </span>
+                {% elif request_received %}
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;"
+                            hx-post="{% url 'respond-friend-request' request_received.id %}"
+                            hx-vals='{"action": "accept"}'
+                            hx-swap="outerHTML">
+                        accept request
+                    </button>
+                    <button class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.75rem; border-color: var(--term-gray); color: var(--term-gray);"
+                            hx-post="{% url 'respond-friend-request' request_received.id %}"
+                            hx-vals='{"action": "decline"}'
+                            hx-swap="outerHTML">
+                        decline
+                    </button>
+                </div>
+                {% else %}
+                <button class="btn" style="padding: 0.25rem 0.75rem; font-size: 0.75rem;"
+                        hx-post="{% url 'send-friend-request' profile_user.id %}"
+                        hx-swap="outerHTML">
+                    <span style="color: var(--term-cyan);">$</span> add_friend
+                </button>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if shared_favorites_count > 0 %}
+        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--term-border);">
+            <span style="color: var(--term-amber); font-size: 0.875rem;">
+                <span style="color: var(--term-amber);">*</span> {{ shared_favorites_count }} shared audiobook{{ shared_favorites_count|pluralize }} in common
+            </span>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Library Preview -->
+    {% if favorites %}
+    <div class="content-section" style="margin-bottom: 1.5rem;">
+        <div style="color: var(--term-dim); font-size: 0.75rem; margin-bottom: 1rem;">$ ls ~/{{ profile_user.username }}/library</div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.75rem;">
+            {% for fav in favorites %}
+            <a href="{{ fav.spotify_url }}" target="_blank" style="display: block;">
+                {% if fav.image_url %}
+                <img src="{{ fav.image_url }}" alt="{{ fav.title }}"
+                     style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px; border: 1px solid var(--term-border);">
+                {% else %}
+                <div style="width: 100%; aspect-ratio: 1; background: var(--term-bg); border: 1px solid var(--term-border); border-radius: 4px; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: var(--term-dim);">?</span>
+                </div>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Posts -->
+    {% if recent_posts %}
+    <div class="content-section">
+        <div style="color: var(--term-dim); font-size: 0.75rem; margin-bottom: 1rem;">$ ls ~/{{ profile_user.username }}/posts --recent</div>
+        <div class="terminal-list">
+            {% for post in recent_posts %}
+            <a href="{% url 'post-detail' post.id %}" class="terminal-list-item" style="display: block; text-decoration: none;">
+                <div style="display: flex; gap: 0.75rem; align-items: flex-start;">
+                    <div style="color: var(--term-dim); font-size: 0.75rem; width: 20px;">{{ forloop.counter|stringformat:"02d" }}</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="color: var(--term-green); margin-bottom: 0.25rem;">{{ post.title }}</div>
+                        <div style="color: var(--term-gray); font-size: 0.75rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                            {{ post.content|truncatewords:15 }}
+                        </div>
+                        <div style="color: var(--term-dim); font-size: 0.7rem; margin-top: 0.25rem;">{{ post.date_posted|date:"M d, Y" }}</div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        <div style="margin-top: 1rem;">
+            <a href="{% url 'user-posts' profile_user.username %}" style="color: var(--term-cyan); font-size: 0.875rem; text-decoration: none;">
+                View all posts <span style="color: var(--term-dim);">></span>
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Back link -->
+    <div style="margin-top: 1.5rem;">
+        <a href="{% url 'discover-users' %}" style="color: var(--term-cyan); text-decoration: none; font-size: 0.875rem;">
+            <span style="color: var(--term-dim);">&lt;</span> back to discover
+        </a>
+    </div>
+</div>
+
+{% endblock %}
